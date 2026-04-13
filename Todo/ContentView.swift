@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct ContentView: View {
     @EnvironmentObject private var store: AppStore
@@ -20,6 +21,11 @@ struct ContentView: View {
                     Label("Jornadas", systemImage: "clock.badge.checkmark")
                 }
         }
+        .simultaneousGesture(
+            TapGesture().onEnded {
+                hideKeyboard()
+            }
+        )
     }
 }
 
@@ -412,4 +418,8 @@ private extension Double {
 
         return "\(self.formatted(.number.precision(.fractionLength(1)))) h"
     }
+}
+
+private func hideKeyboard() {
+    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
 }
