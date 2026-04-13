@@ -21,11 +21,6 @@ struct ContentView: View {
                     Label("Jornadas", systemImage: "clock.badge.checkmark")
                 }
         }
-        .simultaneousGesture(
-            TapGesture().onEnded {
-                hideKeyboard()
-            }
-        )
     }
 }
 
@@ -65,6 +60,14 @@ private struct DashboardView: View {
                 }
             }
             .navigationTitle("Dashboard")
+            .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Cerrar") {
+                        hideKeyboard()
+                    }
+                }
+            }
         }
     }
 }
@@ -122,6 +125,14 @@ private struct ListsView: View {
                 }
             }
             .navigationTitle("Listas")
+            .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Cerrar") {
+                        hideKeyboard()
+                    }
+                }
+            }
         }
     }
 }
@@ -171,6 +182,14 @@ private struct TaskListDetailView: View {
             }
         }
         .navigationTitle(taskList?.name ?? "Lista")
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button("Cerrar") {
+                    hideKeyboard()
+                }
+            }
+        }
     }
 }
 
@@ -311,6 +330,14 @@ private struct WorkersView: View {
                 }
             }
             .navigationTitle("Jornadas")
+            .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Cerrar") {
+                        hideKeyboard()
+                    }
+                }
+            }
         }
     }
 
@@ -407,6 +434,14 @@ private struct WorkerDetailView: View {
             }
         }
         .navigationTitle(worker?.name ?? "Trabajador")
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button("Cerrar") {
+                    hideKeyboard()
+                }
+            }
+        }
     }
 }
 
