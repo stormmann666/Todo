@@ -53,6 +53,13 @@ final class AppStore: ObservableObject {
         }
     }
 
+    func markTaskPending(_ itemID: UUID, from location: TaskLocation) {
+        updateTask(itemID, in: location) { item in
+            item.isCompleted = false
+            item.completedAt = nil
+        }
+    }
+
     func deleteTask(_ itemID: UUID, from location: TaskLocation) {
         switch location {
         case .dashboard:
@@ -61,6 +68,23 @@ final class AppStore: ObservableObject {
             guard let listIndex = customLists.firstIndex(where: { $0.id == listID }) else { return }
             customLists[listIndex].items.removeAll { $0.id == itemID }
         }
+        save()
+    }
+
+    func markAllPendingTasksCompleted(in listID: UUID) {
+        guard let listIndex = customLists.firstIndex(where: { $0.id == listID }) else { return }
+
+        for itemIndex in customLists[listIndex].items.indices where customLists[listIndex].items[itemIndex].isCompleted == false {
+            customLists[listIndex].items[itemIndex].isCompleted = true
+            customLists[listIndex].items[itemIndex].completedAt = .now
+        }
+
+        save()
+    }
+
+    func deleteAllTasks(in listID: UUID) {
+        guard let listIndex = customLists.firstIndex(where: { $0.id == listID }) else { return }
+        customLists[listIndex].items.removeAll()
         save()
     }
 

@@ -92,6 +92,21 @@ private struct ListsView: View {
                     }
                 }
 
+                if store.customLists.isEmpty == false {
+                    Section("Resumen") {
+                        NavigationLink {
+                            AllPendingTasksView()
+                        } label: {
+                            HStack {
+                                Label("Ver todo", systemImage: "square.stack.3d.up")
+                                Spacer()
+                                Text("\(totalPendingTasks)")
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                }
+
                 if store.customLists.isEmpty {
                     Section {
                         ContentUnavailableView(
@@ -135,6 +150,81 @@ private struct ListsView: View {
             }
         }
     }
+
+    private var totalPendingTasks: Int {
+        store.customLists.reduce(0) { partialResult, list in
+            partialResult + list.items.filter { $0.isCompleted == false }.count
+        }
+    }
+}
+
+private struct AllPendingTasksView: View {
+    @EnvironmentObject private var store: AppStore
+
+    var body: some View {
+        List {
+            if pendingLists.isEmpty {
+                ContentUnavailableView(
+                    "Sin tareas pendientes",
+                    systemImage: "checkmark.circle",
+                    description: Text("Ahora mismo no hay pedidos o tareas pendientes en tus listas.")
+                )
+            } else {
+                ForEach(pendingLists) { list in
+                    Section {
+                        categoryHeader(for: list)
+
+                        ForEach(list.items.filter { $0.isCompleted == false }) { item in
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(item.title)
+                                Text(list.name)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            .padding(.vertical, 2)
+                        }
+                    }
+                }
+            }
+        }
+        .navigationTitle("Todo pendiente")
+    }
+
+    private var pendingLists: [TaskList] {
+        store.customLists.filter { list in
+            list.items.contains(where: { $0.isCompleted == false })
+        }
+    }
+
+    @ViewBuilder
+    private func categoryHeader(for list: TaskList) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(list.name)
+                        .font(.headline)
+                    Text("\(list.items.filter { $0.isCompleted == false }.count) pendientes")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer()
+            }
+
+            HStack {
+                Button("Terminar categoria") {
+                    store.markAllPendingTasksCompleted(in: list.id)
+                }
+                .buttonStyle(.borderedProminent)
+
+                Button("Borrar todo", role: .destructive) {
+                    store.deleteAllTasks(in: list.id)
+                }
+                .buttonStyle(.bordered)
+            }
+        }
+        .padding(.vertical, 4)
+    }
 }
 
 private struct TaskListDetailView: View {
@@ -162,6 +252,19 @@ private struct TaskListDetailView: View {
                         newItemTitle = ""
                     }
                     .buttonStyle(.borderedProminent)
+                }
+            }
+
+            if let taskList {
+                Section("Acciones de categoria") {
+                    Button("Terminar todo") {
+                        store.markAllPendingTasksCompleted(in: taskList.id)
+                    }
+                    .buttonStyle(.borderedProminent)
+
+                    Button("Borrar todo", role: .destructive) {
+                        store.deleteAllTasks(in: taskList.id)
+                    }
                 }
             }
 
@@ -253,6 +356,10 @@ private struct TaskRowView: View {
 
                 Button(location == .dashboard ? "Marcar como realizado" : "Marcar como terminado") {
                     store.markTaskCompleted(item.id, from: location)
+                }
+            } else {
+                Button("Volver a pendiente") {
+                    store.markTaskPending(item.id, from: location)
                 }
             }
 
