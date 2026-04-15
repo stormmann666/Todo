@@ -3,6 +3,7 @@ import UIKit
 
 struct ContentView: View {
     @EnvironmentObject private var store: AppStore
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         TabView {
@@ -20,6 +21,11 @@ struct ContentView: View {
                 .tabItem {
                     Label("Jornadas", systemImage: "clock.badge.checkmark")
                 }
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active {
+                store.reloadFromDisk()
+            }
         }
     }
 }
@@ -60,6 +66,9 @@ private struct DashboardView: View {
                 }
             }
             .navigationTitle("Dashboard")
+            .refreshable {
+                store.reloadFromDisk()
+            }
             .toolbar {
                 ToolbarItemGroup(placement: .keyboard) {
                     Spacer()

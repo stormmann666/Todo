@@ -20,6 +20,13 @@ final class AppStore: ObservableObject {
         )
     }
 
+    func reloadFromDisk() {
+        let loadedState = AppRepository.load()
+        dashboardItems = loadedState.dashboardItems
+        customLists = loadedState.customLists
+        workers = loadedState.workers
+    }
+
     func save() {
         AppRepository.save(state)
     }
