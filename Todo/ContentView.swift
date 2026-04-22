@@ -359,31 +359,35 @@ private struct TaskRowView: View {
     let location: TaskLocation
 
     @State private var showingActions = false
+    @State private var showingEditDialog = false
+    @State private var editedTitle = ""
 
     var body: some View {
-        Button {
-            showingActions = true
-        } label: {
-            HStack(spacing: 12) {
-                Image(systemName: item.isCompleted ? "checkmark.circle.fill" : "circle")
-                    .foregroundStyle(item.isCompleted ? .green : .secondary)
+        HStack(spacing: 12) {
+            Image(systemName: item.isCompleted ? "checkmark.circle.fill" : "circle")
+                .foregroundStyle(item.isCompleted ? .green : .secondary)
 
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(item.title)
-                        .strikethrough(item.isCompleted, color: .secondary)
-                        .foregroundStyle(item.isCompleted ? .secondary : .primary)
-                        .multilineTextAlignment(.leading)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(item.title)
+                    .strikethrough(item.isCompleted, color: .secondary)
+                    .foregroundStyle(item.isCompleted ? .secondary : .primary)
+                    .multilineTextAlignment(.leading)
 
-                    Text(item.createdAt.formatted(date: .abbreviated, time: .shortened))
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                }
-
-                Spacer()
+                Text(item.createdAt.formatted(date: .abbreviated, time: .shortened))
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
             }
-            .contentShape(Rectangle())
+
+            Spacer()
         }
-        .buttonStyle(.plain)
+        .contentShape(Rectangle())
+        .onTapGesture {
+            showingActions = true
+        }
+        .onLongPressGesture {
+            editedTitle = item.title
+            showingEditDialog = true
+        }
         .confirmationDialog("Que quieres hacer?", isPresented: $showingActions) {
             if item.isCompleted == false {
                 ForEach(Array(moveDestinations.enumerated()), id: \.offset) { _, destination in
@@ -403,6 +407,13 @@ private struct TaskRowView: View {
 
             Button("Borrar", role: .destructive) {
                 store.deleteTask(item.id, from: location)
+            }
+        }
+        .alert("Editar linea", isPresented: $showingEditDialog) {
+            TextField("Texto", text: $editedTitle)
+            Button("Cancelar", role: .cancel) {}
+            Button("Guardar") {
+                store.renameTask(item.id, to: editedTitle, in: location)
             }
         }
     }

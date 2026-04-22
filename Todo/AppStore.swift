@@ -67,6 +67,15 @@ final class AppStore: ObservableObject {
         }
     }
 
+    func renameTask(_ itemID: UUID, to title: String, in location: TaskLocation) {
+        let cleaned = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard cleaned.isEmpty == false else { return }
+
+        updateTask(itemID, in: location) { item in
+            item.title = cleaned
+        }
+    }
+
     func deleteTask(_ itemID: UUID, from location: TaskLocation) {
         switch location {
         case .dashboard:
