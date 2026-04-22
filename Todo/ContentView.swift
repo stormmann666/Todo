@@ -240,9 +240,19 @@ private struct TaskListDetailView: View {
     @EnvironmentObject private var store: AppStore
     let listID: UUID
     @State private var newItemTitle = ""
+    @State private var copiedPendingItems = false
 
     private var taskList: TaskList? {
         store.customLists.first(where: { $0.id == listID })
+    }
+
+    private var pendingItemsText: String {
+        guard let taskList else { return "" }
+
+        return taskList.items
+            .filter { $0.isCompleted == false }
+            .map(\.title)
+            .joined(separator: "\n")
     }
 
     var body: some View {
@@ -266,6 +276,14 @@ private struct TaskListDetailView: View {
 
             if let taskList {
                 Section("Acciones de categoria") {
+                    Button("Exportar pendientes") {
+                        guard pendingItemsText.isEmpty == false else { return }
+                        UIPasteboard.general.string = pendingItemsText
+                        copiedPendingItems = true
+                    }
+                    .buttonStyle(.bordered)
+                    .disabled(pendingItemsText.isEmpty)
+
                     Button("Terminar todo") {
                         store.markAllPendingTasksCompleted(in: taskList.id)
                     }
@@ -273,6 +291,12 @@ private struct TaskListDetailView: View {
 
                     Button("Borrar todo", role: .destructive) {
                         store.deleteAllTasks(in: taskList.id)
+                    }
+
+                    if copiedPendingItems {
+                        Text("Pendientes copiados al portapapeles")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                     }
                 }
             }
@@ -300,6 +324,11 @@ private struct TaskListDetailView: View {
                 Button("Cerrar") {
                     hideKeyboard()
                 }
+            }
+        }
+        .onChange(of: pendingItemsText) { _, newValue in
+            if newValue.isEmpty {
+                copiedPendingItems = false
             }
         }
     }
